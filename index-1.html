@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SpendTrack">
+<meta name="theme-color" content="#0f1115">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>SpendTrack</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --card2: #1e222b;
+    --border: #2a2f3a;
+    --text: #e8e9ed;
+    --muted: #8b909c;
+    --green: #3ecf8e;
+    --red: #ff5c5c;
+    --amber: #f5b942;
+    --accent: #5b8def;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 40px;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  header h1 { font-size: 16px; margin: 0; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .logo { width: 28px; height: 28px; border-radius: 7px; flex: none; display: block; }
+  .io-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .io-btns button {
+    background: var(--card2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .io-btns button:active { background: var(--border); }
+
+  main { padding: 16px; max-width: 480px; margin: 0 auto; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin: 0 0 12px 0;
+  }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .row > div { flex: 1; }
+  label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+  input[type=number], input[type=text] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: var(--text);
+    font-size: 15px;
+  }
+  select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card2);
+    color: var(--text);
+    font-size: 15px;
+  }
+  button.primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+  }
+  button.primary:active { opacity: 0.85; }
+  button.small {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 5px 9px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  button.danger { color: var(--red); }
+
+  .big-number { font-size: 30px; font-weight: 700; }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+  .neutral { color: var(--text); }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .today-grid { display: flex; gap: 12px; margin-bottom: 14px; }
+  .today-grid .box {
+    flex: 1;
+    background: var(--card2);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .today-grid .box .val { font-size: 18px; font-weight: 700; }
+  .today-grid .box .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .msg-banner {
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+  .msg-banner.ok { background: rgba(62,207,142,0.12); color: var(--green); border: 1px solid rgba(62,207,142,0.3); }
+  .msg-banner.bad { background: rgba(255,92,92,0.12); color: var(--red); border: 1px solid rgba(255,92,92,0.3); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; }
+  tr:last-child td { border-bottom: none; }
+
+  .debt-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .debt-item:last-child { border-bottom: none; }
+  .debt-item .name { font-size: 14px; }
+  .debt-item .note { font-size: 11px; color: var(--muted); }
+  .debt-item .amt { font-weight: 700; font-size: 14px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--muted);
+  }
+  .tab.active { color: var(--text); border-color: var(--accent); background: rgba(91,141,239,0.1); }
+  .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 10px 0; }
+  .totals-strip { display: flex; gap: 10px; margin-top: 10px; }
+  .totals-strip .box { flex: 1; text-align: center; padding: 8px; background: var(--card2); border-radius: 8px; }
+  .totals-strip .box .v { font-weight: 700; font-size: 15px; }
+  .totals-strip .box .l { font-size: 11px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><img class="logo" src="icon-192.png" alt="" width="28" height="28" onerror="this.style.display='none'">SpendTrack</h1>
+  <div class="io-btns">
+    <button id="resetBtn" style="color:var(--red);">Reset</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- SETUP -->
+  <div class="card">
+    <h2>Setup</h2>
+    <div class="row">
+      <div>
+        <label>Total amount you have</label>
+        <input type="number" id="totalAmount" placeholder="e.g. 10000">
+      </div>
+      <div>
+        <label>Daily spending limit</label>
+        <input type="number" id="dailyLimit" placeholder="e.g. 100">
+      </div>
+    </div>
+    <button class="primary" id="saveSetup">Save</button>
+  </div>
+
+  <!-- OVERALL BALANCE -->
+  <div class="card">
+    <h2>Overall Balance Left</h2>
+    <div class="big-number" id="overallBalance">0</div>
+    <div class="sub" id="overallSub">of total amount</div>
+  </div>
+
+  <!-- TODAY -->
+  <div class="card">
+    <h2>Today — <span id="todayDate"></span></h2>
+    <div class="today-grid">
+      <div class="box">
+        <div class="val" id="todayAllowance">0</div>
+        <div class="lbl">Budget for today</div>
+      </div>
+      <div class="box">
+        <div class="val" id="todayCarryLabel">0</div>
+        <div class="lbl" id="todayCarrySub">carried into today</div>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Amount spent today</label>
+        <input type="number" id="spentToday" placeholder="e.g. 200">
+      </div>
+    </div>
+    <button class="primary" id="saveSpent">Save Today's Spending</button>
+    <div id="statusBanner"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="card">
+    <h2>History</h2>
+    <div id="historyTableWrap">
+      <div class="empty">No days recorded yet.</div>
+    </div>
+  </div>
+
+  <!-- DEBTS -->
+  <div class="card">
+    <h2>People I Owe / Who Owe Me</h2>
+    <div class="tabs">
+      <div class="tab active" data-tab="owe">I Owe</div>
+      <div class="tab" data-tab="owed">Owes Me</div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Name</label>
+        <input type="text" id="debtName" placeholder="Name">
+      </div>
+      <div>
+        <label>Amount</label>
+        <input type="number" id="debtAmount" placeholder="0">
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Note (optional)</label>
+        <input type="text" id="debtNote" placeholder="e.g. laptop repair">
+      </div>
+    </div>
+    <button class="primary" id="addDebt">Add</button>
+    <div id="debtList" style="margin-top:14px;"></div>
+    <div class="totals-strip">
+      <div class="box">
+        <div class="v negative" id="totalIOwe">0</div>
+        <div class="l">Total I Owe</div>
+      </div>
+      <div class="box">
+        <div class="v positive" id="totalOwedToMe">0</div>
+        <div class="l">Total Owed To Me</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const STORAGE_KEY = 'budgetTrackerData_v1';
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try { return JSON.parse(raw); } catch(e) {}
+  }
+  return {
+    totalAmount: 0,
+    dailyLimit: 0,
+    history: [],      // [{date, allowance, spent, carryover, saved}]
+    debts: []          // [{id, type:'owe'|'owed', name, amount, note}]
+  };
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+let data = loadData();
+let activeDebtTab = 'owe';
+
+function fmt(n) {
+  n = Number(n) || 0;
+  return n.toLocaleString(undefined, {maximumFractionDigits: 2});
+}
+
+function getYesterdayCarryover() {
+  if (data.history.length === 0) return 0;
+  const last = data.history[data.history.length - 1];
+  if (last.date === todayStr()) return null; // today already exists, handled elsewhere
+  return last.carryover;
+}
+
+function ensureTodayEntry() {
+  const t = todayStr();
+  let entry = data.history.find(h => h.date === t);
+  if (!entry) {
+    // carryover from most recent previous day (if any)
+    let carry = 0;
+    if (data.history.length > 0) {
+      carry = data.history[data.history.length - 1].carryover;
+    }
+    entry = {
+      date: t,
+      allowance: (Number(data.dailyLimit) || 0) + carry,
+      spent: 0,
+      carryover: (Number(data.dailyLimit) || 0) + carry,
+      saved: false
+    };
+    data.history.push(entry);
+    saveData();
+  }
+  return entry;
+}
+
+function totalSpentAllTime() {
+  return data.history.reduce((sum, h) => sum + (Number(h.spent) || 0), 0);
+}
+
+function render() {
+  document.getElementById('totalAmount').value = data.totalAmount || '';
+  document.getElementById('dailyLimit').value = data.dailyLimit || '';
+
+  const entry = ensureTodayEntry();
+  document.getElementById('todayDate').textContent = entry.date;
+  document.getElementById('todayAllowance').textContent = fmt(entry.allowance);
+
+  const carryFromYesterday = entry.allowance - (Number(data.dailyLimit) || 0);
+  const carryEl = document.getElementById('todayCarryLabel');
+  carryEl.textContent = (carryFromYesterday >= 0 ? '+' : '') + fmt(carryFromYesterday);
+  carryEl.className = 'val ' + (carryFromYesterday > 0 ? 'positive' : carryFromYesterday < 0 ? 'negative' : 'neutral');
+
+  document.getElementById('spentToday').value = entry.saved ? entry.spent : '';
+
+  // status banner
+  const banner = document.getElementById('statusBanner');
+  if (entry.saved) {
+    if (entry.carryover < 0) {
+      banner.innerHTML = `<div class="msg-banner bad">You overspent. You're at <b>${fmt(entry.carryover)}</b> — reduce tomorrow's spending to cover it.</div>`;
+    } else if (entry.carryover > 0) {
+      banner.innerHTML = `<div class="msg-banner ok">You underspent. Tomorrow's budget will be <b>${fmt((Number(data.dailyLimit)||0) + entry.carryover)}</b> (limit + carryover).</div>`;
+    } else {
+      banner.innerHTML = `<div class="msg-banner ok">Spent exactly your budget. Tomorrow resets to your normal daily limit.</div>`;
+    }
+  } else {
+    banner.innerHTML = '';
+  }
+
+  // overall balance
+  const spentAll = totalSpentAllTime();
+  const remaining = (Number(data.totalAmount) || 0) - spentAll;
+  const overallEl = document.getElementById('overallBalance');
+  overallEl.textContent = fmt(remaining);
+  overallEl.className = 'big-number ' + (remaining < 0 ? 'negative' : 'positive');
+  document.getElementById('overallSub').textContent = `Spent ${fmt(spentAll)} of ${fmt(data.totalAmount || 0)} total`;
+
+  // history table
+  const wrap = document.getElementById('historyTableWrap');
+  if (data.history.length === 0) {
+    wrap.innerHTML = '<div class="empty">No days recorded yet.</div>';
+  } else {
+    let rows = data.history.slice().reverse().map(h => {
+      const cls = h.carryover < 0 ? 'negative' : h.carryover > 0 ? 'positive' : 'neutral';
+      return `<tr>
+        <td>${h.date}</td>
+        <td>${fmt(h.allowance)}</td>
+        <td>${h.saved ? fmt(h.spent) : '—'}</td>
+        <td class="${cls}">${h.saved ? ((h.carryover>=0?'+':'')+fmt(h.carryover)) : '—'}</td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = `<table>
+      <tr><th>Date</th><th>Budget</th><th>Spent</th><th>Balance</th></tr>
+      ${rows}
+    </table>`;
+  }
+
+  renderDebts();
+}
+
+function renderDebts() {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === activeDebtTab);
+  });
+  const list = data.debts.filter(d => d.type === activeDebtTab);
+  const container = document.getElementById('debtList');
+  if (list.length === 0) {
+    container.innerHTML = `<div class="empty">No entries yet.</div>`;
+  } else {
+    container.innerHTML = list.map(d => `
+      <div class="debt-item">
+        <div>
+          <div class="name">${escapeHtml(d.name)}</div>
+          ${d.note ? `<div class="note">${escapeHtml(d.note)}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="amt ${activeDebtTab === 'owe' ? 'negative' : 'positive'}">${fmt(d.amount)}</div>
+          <button class="small danger" data-id="${d.id}" onclick="deleteDebt('${d.id}')">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const totalOwe = data.debts.filter(d => d.type === 'owe').reduce((s,d)=>s+Number(d.amount||0),0);
+  const totalOwed = data.debts.filter(d => d.type === 'owed').reduce((s,d)=>s+Number(d.amount||0),0);
+  document.getElementById('totalIOwe').textContent = fmt(totalOwe);
+  document.getElementById('totalOwedToMe').textContent = fmt(totalOwed);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function deleteDebt(id) {
+  data.debts = data.debts.filter(d => d.id !== id);
+  saveData();
+  renderDebts();
+}
+window.deleteDebt = deleteDebt;
+
+// --- Event listeners ---
+
+document.getElementById('saveSetup').addEventListener('click', () => {
+  const total = Number(document.getElementById('totalAmount').value) || 0;
+  const limit = Number(document.getElementById('dailyLimit').value) || 0;
+  data.totalAmount = total;
+  data.dailyLimit = limit;
+
+  // if today's entry hasn't been saved yet, recalc its allowance with new limit
+  const t = todayStr();
+  let entry = data.history.find(h => h.date === t);
+  if (entry && !entry.saved) {
+    const carry = data.history.length > 1 ? data.history[data.history.length - 2].carryover : 0;
+    entry.allowance = limit + carry;
+    entry.carryover = entry.allowance;
+  }
+  saveData();
+  render();
+});
+
+document.getElementById('saveSpent').addEventListener('click', () => {
+  const spent = Number(document.getElementById('spentToday').value);
+  if (isNaN(spent)) { alert('Enter a valid amount spent'); return; }
+  const entry = ensureTodayEntry();
+  entry.spent = spent;
+  entry.carryover = entry.allowance - spent;
+  entry.saved = true;
+  saveData();
+  render();
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    activeDebtTab = tab.dataset.tab;
+    renderDebts();
+  });
+});
+
+document.getElementById('addDebt').addEventListener('click', () => {
+  const name = document.getElementById('debtName').value.trim();
+  const amount = Number(document.getElementById('debtAmount').value);
+  const note = document.getElementById('debtNote').value.trim();
+  if (!name || !amount) { alert('Enter a name and amount'); return; }
+  data.debts.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+    type: activeDebtTab,
+    name, amount, note
+  });
+  saveData();
+  document.getElementById('debtName').value = '';
+  document.getElementById('debtAmount').value = '';
+  document.getElementById('debtNote').value = '';
+  renderDebts();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('This will permanently delete ALL data — total amount, daily limit, full history, and owe/owed lists. This cannot be undone. Continue?')) return;
+  if (!confirm('Are you absolutely sure? Consider tapping Export first to keep a backup. Reset everything now?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  data = {
+    totalAmount: 0,
+    dailyLimit: 0,
+    history: [],
+    debts: []
+  };
+  saveData();
+  render();
+});
+
+render();
+</script>
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }
+</script>
+
+</body>
+</html>
